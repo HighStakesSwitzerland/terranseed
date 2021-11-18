@@ -10,20 +10,22 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/pex"
 	"github.com/tendermint/tendermint/version"
+	"html/template"
+	oslog "log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
-
-	"github.com/mitchellh/go-homedir"
+	"googlemaps.github.io/maps"
 )
 
 var (
-//	https://blog.jetbrains.com/go/2021/06/09/how-to-use-go-embed-in-go-1-16/
-	//go:embed resources
-	res embed.FS
-	pages = map[string]string{
+	//https://socketloop.com/tutorials/golang-find-location-by-ip-address-and-display-with-google-map
+	//go:embed assets web
+	res   embed.FS
+	files = map[string]string{
 		"/": "web/index.html",
+		"/assets/gmaps.js": "assets/gmaps.js",
+		"/assets/main.css": "assets/main.css",
 	}
 )
 
@@ -54,20 +56,40 @@ func DefaultConfig() *Config {
 }
 
 func startWebServer() {
-	http.Handle("/", http.FileServer(http.Dir("/tmp")))
-
-
-	s := &http.Server{
-		Addr:           ":8080",
-		Handler:        myHandler,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		page, ok := files[r.URL.Path]
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		tpl, err := template.ParseFS(res, page)
+		if err != nil {
+			oslog.Printf("page %s not found in pages cache...", r.RequestURI)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusOK)
+		data := map[string]interface{}{
+			"userAgent": r.UserAgent(),
+		}
+		if err := tpl.Execute(w, data); err != nil {
+			return
+		}
+	})
+	http.FileServer(http.FS(res))
+	oslog.Println("server started...")
+	err := http.ListenAndServe(":8888", nil)
+	if err != nil {
+		panic(err)
 	}
 }
 
 func main() {
-	idOverride := os.Getenv("ID")
+
+	startWebServer()
+
+/*	idOverride := os.Getenv("ID")
 	seedOverride := os.Getenv("SEEDS")
 	userHomeDir, err := homedir.Dir()
 	if err != nil {
@@ -84,7 +106,7 @@ func main() {
 	if seedOverride != "" {
 		SeedConfig.Seeds = seedOverride
 	}
-	Start(*SeedConfig)
+	Start(*SeedConfig)*/
 }
 
 // MkdirAllPanic invokes os.MkdirAll but panics if there is an error
