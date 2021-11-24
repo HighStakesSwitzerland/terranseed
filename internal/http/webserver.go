@@ -20,36 +20,20 @@ type WebResources struct {
 }
 
 func StartWebServer(seedConfig tendermint.Config, webResources WebResources) {
-	logger.Info("test")
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		page, ok := webResources.Files[r.URL.Path]
-		if !ok {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		tpl, err := template.ParseFS(webResources.Res, page)
-		if err != nil {
-			logger.Info("page {} not found in pages cache...", r.RequestURI)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusOK)
-		data := map[string]interface{}{
-			"userAgent": r.UserAgent(),
-		}
-		if err := tpl.Execute(w, data); err != nil {
-			return
-		}
-	})
-	http.FileServer(http.FS(webResources.Res))
-	logger.Info("HTTP Server started", "port", seedConfig.HttpPort)
+	// serve static assets
+	fs := http.FileServer(http.Dir("./web/assets"))
+	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+
+	// serve html files
+	http.HandleFunc("/", serveTemplate)
+
+	// start web server in non-blocking
 	err := http.ListenAndServe(":"+seedConfig.HttpPort, nil)
+	logger.Info("HTTP Server started", "port", seedConfig.HttpPort)
 	if err != nil {
 		panic(err)
 	}
 }
-
 
 func serveTemplate(w http.ResponseWriter, r *http.Request) {
 	index := filepath.Join("./web/templates", "index.html")

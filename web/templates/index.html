@@ -3,10 +3,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="/assets/js/gmaps.js    "></script>
+
     <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+
 </head>
 <body>
-<h2>It works!</h2>
+<div id="map"></div>
+
+<!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaaO-uMw5koEl2XdZVjERxCCj_yRF5g60&callback=initMap"></script>
 </body>
 </html>
 {{end}}
