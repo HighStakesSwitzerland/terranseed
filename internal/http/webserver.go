@@ -2,8 +2,10 @@ package http
 
 import (
 	"embed"
+	"encoding/json"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/terran-stakers/terranseed/internal/tendermint"
+	"github.com/terran-stakers/terranseed/internal/geoloc"
+	"github.com/terran-stakers/terranseed/internal/seednode"
 	"html/template"
 	"net/http"
 	"os"
@@ -19,7 +21,7 @@ type WebResources struct {
 	Files map[string]string
 }
 
-func StartWebServer(seedConfig tendermint.Config, webResources WebResources) {
+func StartWebServer(seedConfig seednode.Config, webResources WebResources, ips *[]geoloc.GeolocalizedPeers) {
 	// serve static assets
 	fs := http.FileServer(http.Dir("./web/assets"))
 	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
@@ -28,14 +30,16 @@ func StartWebServer(seedConfig tendermint.Config, webResources WebResources) {
 	http.HandleFunc("/", serveTemplate)
 
 	// serve endpoint
-	http.HandleFunc("/api/peers", tendermint.WritePeers)
+	http.HandleFunc("/api/peers", writePeers)
 
 	// start web server in non-blocking
-	err := http.ListenAndServe(":"+seedConfig.HttpPort, nil)
-	logger.Info("HTTP Server started", "port", seedConfig.HttpPort)
-	if err != nil {
-		panic(err)
-	}
+	go func() {
+		err := http.ListenAndServe(":"+seedConfig.HttpPort, nil)
+		logger.Info("HTTP Server started", "port", seedConfig.HttpPort)
+		if err != nil {
+			panic(err)
+		}
+	}()
 }
 
 func serveTemplate(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +58,7 @@ func serveTemplate(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles(index, templates)
 	if err != nil {
 		// Log the detailed error
-		logger.Error(err.Error())
+		logger.Info(err.Error())
 		// Return a generic "Internal Server Error" message
 		http.Error(w, http.StatusText(500), 500)
 		return
@@ -64,5 +68,17 @@ func serveTemplate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(err.Error())
 		http.Error(w, http.StatusText(500), 500)
+	}
+}
+
+func writePeers(w http.ResponseWriter, r *http.Request) {
+	marshal, err := json.Marshal(&geoloc.ResolvedPeers)
+	if err != nil {
+		logger.Info("Failed to marshal peers list")
+		return
+	}
+	_, err = w.Write(marshal)
+	if err != nil {
+		return
 	}
 }

@@ -3,9 +3,12 @@ package main
 import (
 	"embed"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/p2p"
+	"github.com/terran-stakers/terranseed/internal/geoloc"
 	"github.com/terran-stakers/terranseed/internal/http"
-	"github.com/terran-stakers/terranseed/internal/tendermint"
+	"github.com/terran-stakers/terranseed/internal/seednode"
 	"os"
+	"time"
 )
 
 var (
@@ -18,13 +21,14 @@ var (
 		"/assets/gmaps.js": "assets/js/gmaps.js",
 		"/assets/main.css": "assets/css/main.css",
 	}
+	geolocalizedIps = make([]geoloc.GeolocalizedPeers, 0)
 )
 
 // DefaultConfig returns a seed config initialized with default values
-func DefaultConfig() *tendermint.Config {
-	return &tendermint.Config{
+func DefaultConfig() *seednode.Config {
+	return &seednode.Config{
 		ListenAddress:       "tcp://0.0.0.0:6969",
-		HttpPort:            "8888",
+		HttpPort:            "8080",
 		ChainID:             "osmosis-1",
 		NodeKeyFile:         "node_key.json",
 		AddrBookFile:        "addrbook.json",
@@ -44,13 +48,29 @@ func WebResources() *http.WebResources {
 
 func main() {
 	seedConfig := DefaultConfig()
-	webResources := WebResources();
+	webResources := WebResources()
 
-	tendermint.InitConfig(seedConfig)
+	seednode.InitConfig(seedConfig)
 
 	logger.Info("Starting Seed Node...")
-	tendermint.StartSeedNode(*seedConfig)
+
+	sw := seednode.StartSeedNode(*seedConfig)
 
 	logger.Info("Starting Web Server...")
-	http.StartWebServer(*seedConfig, *webResources)
+	http.StartWebServer(*seedConfig, *webResources, &geolocalizedIps)
+
+	StartGeolocServiceAndBlock(sw)
+}
+
+func StartGeolocServiceAndBlock(sw *p2p.Switch) {
+	// Fire periodically
+	ticker := time.NewTicker(5 * time.Second)
+
+	for {
+		select {
+		case <-ticker.C:
+			peers := seednode.GetPeers(sw)
+			geoloc.ResolveIps(peers)
+		}
+	}
 }

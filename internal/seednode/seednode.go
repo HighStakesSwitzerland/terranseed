@@ -1,4 +1,4 @@
-package tendermint
+package seednode
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ var (
 	logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "config")
 )
 
-func StartSeedNode(seedConfig Config) {
+func StartSeedNode(seedConfig Config) *p2p.Switch {
 	cfg := config.DefaultP2PConfig()
 	cfg.AllowDuplicateIP = true
 
@@ -69,7 +69,6 @@ func StartSeedNode(seedConfig Config) {
 	sw.AddReactor("pex", pexReactor)
 
 	// Set loggers. Uncomment to enable
-
 	// Switch module logs a lot, and it is not very useful
 	/* sw.SetLogger(logger.With("module", "switch")) */
 
@@ -93,5 +92,6 @@ func StartSeedNode(seedConfig Config) {
 		panic(err)
 	}
 
-	InitPeers(sw)
+	return sw
+
 }

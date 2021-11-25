@@ -1,4 +1,4 @@
-package tendermint
+package seednode
 
 import (
 	"github.com/mitchellh/go-homedir"
