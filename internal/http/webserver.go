@@ -27,6 +27,9 @@ func StartWebServer(seedConfig tendermint.Config, webResources WebResources) {
 	// serve html files
 	http.HandleFunc("/", serveTemplate)
 
+	// serve endpoint
+	http.HandleFunc("/api/peers", tendermint.WritePeers)
+
 	// start web server in non-blocking
 	err := http.ListenAndServe(":"+seedConfig.HttpPort, nil)
 	logger.Info("HTTP Server started", "port", seedConfig.HttpPort)

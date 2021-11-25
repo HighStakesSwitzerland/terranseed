@@ -49,7 +49,7 @@ func main() {
 	tendermint.InitConfig(seedConfig)
 
 	logger.Info("Starting Seed Node...")
-//	tendermint.StartSeedNode(*seedConfig)
+	tendermint.StartSeedNode(*seedConfig)
 
 	logger.Info("Starting Web Server...")
 	http.StartWebServer(*seedConfig, *webResources)

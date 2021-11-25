@@ -62,13 +62,19 @@ func StartSeedNode(seedConfig Config) {
 		SeedDisconnectWaitPeriod:     1 * time.Second, // default is 28 hours, we just want to harvest as many addresses as possible
 		PersistentPeersMaxDialPeriod: 0,               // use exponential back-off
 	})
-	pexReactor.SetLogger(logger.With("module", "pex"))
 
 	sw := p2p.NewSwitch(cfg, transport)
-	sw.SetLogger(logger.With("module", "switch"))
 	sw.SetNodeKey(seedConfig.NodeKey)
 	sw.SetAddrBook(addrBook)
 	sw.AddReactor("pex", pexReactor)
+
+	// Set loggers. Uncomment to enable
+
+	// Switch module logs a lot, and it is not very useful
+	/* sw.SetLogger(logger.With("module", "switch")) */
+
+	// Same for pex module
+	/* pexReactor.SetLogger(logger.With("module", "pex")) */
 
 	// last
 	sw.SetNodeInfo(nodeInfo)
@@ -87,15 +93,5 @@ func StartSeedNode(seedConfig Config) {
 		panic(err)
 	}
 
-	go func() {
-		// Fire periodically
-		ticker := time.NewTicker(5 * time.Second)
-
-		for {
-			select {
-			case <-ticker.C:
-				logger.Info("Peers list", "peers", sw.Peers().List())
-			}
-		}
-	}()
+	InitPeers(sw)
 }
