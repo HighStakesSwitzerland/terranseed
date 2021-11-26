@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	ResolvedPeers *[]GeolocalizedPeers
+	ResolvedPeers []GeolocalizedPeers
 	logger        = log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "geoloc")
 	ipApiUrl      = "http://ip-api.com/batch"
 )
@@ -41,11 +41,16 @@ type ipServiceResponse struct {
 	Query       string  `json:"query"`
 }
 
+/*
+	Resolve ips using https://ip-api.com/ geolocation free service
+	Appends the new resolved peers to the ResolvedPeers slice, so we keep the full list since the startup
+*/
 func ResolveIps(peerList []*seednode.Peer) {
-	ResolvedPeers = resolve(getUnresolvedPeers(peerList))
+	ResolvedPeers = append(ResolvedPeers, resolve(getUnresolvedPeers(peerList))...)
+	logger.Info(fmt.Sprintf("We have %d total resolved peers", len(ResolvedPeers)))
 }
 
-func resolve(peers []*seednode.Peer) *[]GeolocalizedPeers {
+func resolve(peers []*seednode.Peer) []GeolocalizedPeers {
 	chunkSize := 10
 	var geolocalizedPeers []GeolocalizedPeers
 	unresolvedPeers := getUnresolvedPeers(peers)
@@ -77,7 +82,7 @@ func resolve(peers []*seednode.Peer) *[]GeolocalizedPeers {
 			}
 		}
 	}
-	return &geolocalizedPeers
+	return geolocalizedPeers
 }
 
 func fillGeolocData(chunk []*seednode.Peer) []ipServiceResponse {
@@ -136,7 +141,7 @@ func isResolved(peer *seednode.Peer) bool {
 	if ResolvedPeers == nil {
 		return false
 	}
-	for _, elt := range *ResolvedPeers {
+	for _, elt := range ResolvedPeers {
 		if elt.Peer.IP == peer.IP {
 			return true
 		}

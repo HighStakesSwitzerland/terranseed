@@ -7,20 +7,17 @@ import (
 	"github.com/terran-stakers/terranseed/internal/geoloc"
 	"github.com/terran-stakers/terranseed/internal/http"
 	"github.com/terran-stakers/terranseed/internal/seednode"
-	"os"
+  "io/fs"
+  "os"
 	"time"
 )
 
 var (
 	logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "main")
 
-	//go:embed web
+	//go:embed dist/terranseed
 	res   embed.FS
-	files = map[string]string{
-		"/":                "web/templates/index.html",
-		"/assets/gmaps.js": "assets/js/gmaps.js",
-		"/assets/main.css": "assets/css/main.css",
-	}
+
 	geolocalizedIps = make([]geoloc.GeolocalizedPeers, 0)
 )
 
@@ -39,27 +36,19 @@ func DefaultConfig() *seednode.Config {
 	}
 }
 
-func WebResources() *http.WebResources {
-	return &http.WebResources{
-		res,
-		files,
-	}
-}
-
 func main() {
 	seedConfig := DefaultConfig()
-	webResources := WebResources()
-
 	seednode.InitConfig(seedConfig)
+  embeddedFS, _ := fs.Sub(res, "dist/terranseed")
 
-	logger.Info("Starting Seed Node...")
+  logger.Info("Starting Seed Node...")
 
-	sw := seednode.StartSeedNode(*seedConfig)
+	// sw := seednode.StartSeedNode(*seedConfig)
 
 	logger.Info("Starting Web Server...")
-	http.StartWebServer(*seedConfig, *webResources, &geolocalizedIps)
+	http.StartWebServer(*seedConfig, embeddedFS, &geolocalizedIps)
 
-	StartGeolocServiceAndBlock(sw)
+	// StartGeolocServiceAndBlock(sw)
 }
 
 func StartGeolocServiceAndBlock(sw *p2p.Switch) {

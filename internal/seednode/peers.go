@@ -15,12 +15,12 @@ type Peer struct {
 	IP      string `json:"ip"`
 }
 
-type peers struct {
-	Peers []*Peer `json:"peers"`
-}
-
+/*
+	Returns the current reactor peers. As in seed mode the pex module disconnects quickly, this list can grow and shrink
+	according to the current connexions
+*/
 func GetPeers(sw *p2p.Switch) []*Peer {
-	logger.Info(fmt.Sprintf("Address book contains %d peers", len(sw.Peers().List())))
+	logger.Info(fmt.Sprintf("Address book contains %d new peers", len(sw.Peers().List())), "peers", sw.Peers().List())
 	peerList = p2pPeersToPeerList(sw.Peers().List())
 	return peerList
 }
