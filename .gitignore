@@ -2,6 +2,7 @@
 build
 *.iml
 tmp
+package-lock.json
 
 # compiled output
 /dist
