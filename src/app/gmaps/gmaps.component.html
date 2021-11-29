@@ -1,6 +1,25 @@
-<google-map
-  height="500px"
-  width="100%"
-  [center]="center"
-  [options]="options">
-</google-map>
+<mat-card>
+  <mat-card-title>Map Overview</mat-card-title>
+  <google-map
+    height="500px"
+    width="100%"
+    [center]="center"
+    [options]="options"
+    (mapClick)="closeInfoWindows()">
+    <ng-container *ngFor="let m of markers">
+      <map-marker
+        #marker="mapMarker"
+        [position]="m.position"
+        [options]="m.options"
+        [label]="m.label"
+        [icon]="m.icon"
+        (mapClick)="openInfoWindow(marker, infoWindow)">
+      </map-marker>
+      <map-info-window
+        #infoWindow="mapInfoWindow"
+        [options]="mapInfoWindowOptions">
+        <app-info-window [marker]="m"></app-info-window>
+      </map-info-window>
+    </ng-container>
+  </google-map>
+</mat-card>
