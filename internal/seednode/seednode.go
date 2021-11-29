@@ -52,7 +52,7 @@ func StartSeedNode(seedConfig Config) *p2p.Switch {
 	}
 
 	userHomeDir, _ := homedir.Dir()
-	addrBookFilePath := filepath.Join(userHomeDir, ConfigDir, "config", seedConfig.AddrBookFile)
+	addrBookFilePath := filepath.Join(userHomeDir, seedConfig.ConfigDir, "config", seedConfig.AddrBookFile)
 	addrBook := pex.NewAddrBook(addrBookFilePath, seedConfig.AddrBookStrict)
 	addrBook.SetLogger(logger.With("module", "addrbook"))
 
@@ -70,10 +70,10 @@ func StartSeedNode(seedConfig Config) *p2p.Switch {
 
 	// Set loggers. Uncomment to enable
 	// Switch module logs a lot, and it is not very useful
-	/* sw.SetLogger(logger.With("module", "switch")) */
+	sw.SetLogger(logger.With("module", "switch"))
 
 	// Same for pex module
-	/* pexReactor.SetLogger(logger.With("module", "pex")) */
+	pexReactor.SetLogger(logger.With("module", "pex"))
 
 	// last
 	sw.SetNodeInfo(nodeInfo)

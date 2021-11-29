@@ -21,7 +21,15 @@ var (
 
 type GeolocalizedPeers struct {
 	seednode.Peer
-	ipServiceResponse
+	Country string  `json:"country"`
+	Region  string  `json:"region"`
+	City    string  `json:"city"`
+	Lat     float32 `json:"lat"`
+	Lon     float32 `json:"lon"`
+	Isp     string  `json:"isp"`
+	Org     string  `json:"org"`
+	As      string  `json:"as"`
+	NodeId  string  `json:"nodeId"`
 }
 
 type ipServiceResponse struct {
@@ -38,7 +46,7 @@ type ipServiceResponse struct {
 	Isp         string  `json:"isp"`
 	Org         string  `json:"org"`
 	As          string  `json:"as"`
-	Query       string  `json:"query"`
+	Query       string  `json:"Query"`
 }
 
 /*
@@ -46,8 +54,10 @@ type ipServiceResponse struct {
 	Appends the new resolved peers to the ResolvedPeers slice, so we keep the full list since the startup
 */
 func ResolveIps(peerList []*seednode.Peer) {
-	ResolvedPeers = append(ResolvedPeers, resolve(getUnresolvedPeers(peerList))...)
-	logger.Info(fmt.Sprintf("We have %d total resolved peers", len(ResolvedPeers)))
+  if len(peerList) > 0 {
+    ResolvedPeers = append(ResolvedPeers, resolve(getUnresolvedPeers(peerList))...)
+    logger.Info(fmt.Sprintf("We have %d total resolved peers", len(ResolvedPeers)))
+  }
 }
 
 func resolve(peers []*seednode.Peer) []GeolocalizedPeers {
@@ -55,7 +65,9 @@ func resolve(peers []*seednode.Peer) []GeolocalizedPeers {
 	var geolocalizedPeers []GeolocalizedPeers
 	unresolvedPeers := getUnresolvedPeers(peers)
 	peersLength := len(unresolvedPeers)
-	logger.Info(fmt.Sprintf("There is %d new peers that need resolution", peersLength))
+  if (peersLength > 0) {
+    logger.Info(fmt.Sprintf("There is %d new peers that need resolution", peersLength))
+  }
 
 	for i := 0; i < peersLength; i += chunkSize {
 		end := i + chunkSize
@@ -75,8 +87,16 @@ func resolve(peers []*seednode.Peer) []GeolocalizedPeers {
 					continue
 				}
 				newGeolocalizedPeer = GeolocalizedPeers{
-					Peer:              *peer,
-					ipServiceResponse: elt,
+					Peer:    *peer,
+					Country: elt.Country,
+					Region:  elt.Region,
+					City:    elt.City,
+					Lat:     elt.Lat,
+					Lon:     elt.Lon,
+					Isp:     elt.Isp,
+					Org:     elt.Org,
+					As:      elt.As,
+					NodeId:  string(peer.NodeId),
 				}
 				geolocalizedPeers = append(geolocalizedPeers, newGeolocalizedPeer)
 			}

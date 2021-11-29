@@ -7,12 +7,9 @@ import (
 	"path/filepath"
 )
 
-var (
-	ConfigDir = ".tinyseed"
-)
-
 // Config defines the configuration format
 type Config struct {
+  ConfigDir           string `toml:"config_dir" comment:"The config dir (defaults to $HOME/.terranseed)"`
 	ListenAddress       string `toml:"laddr" comment:"Address to listen for incoming connections"`
 	HttpPort            string `toml:"http_port" comment:"Port for the http server"`
 	ChainID             string `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
@@ -32,7 +29,7 @@ func InitConfig(seedConfig *Config) {
 	}
 
 	// init config directory & files
-	homeDir := filepath.Join(userHomeDir, ConfigDir, "config")
+	homeDir := filepath.Join(userHomeDir, seedConfig.ConfigDir, "config")
 	configFilePath := filepath.Join(homeDir, "config.toml")
 	nodeKeyFilePath := filepath.Join(homeDir, seedConfig.NodeKeyFile)
 	addrBookFilePath := filepath.Join(homeDir, seedConfig.AddrBookFile)
