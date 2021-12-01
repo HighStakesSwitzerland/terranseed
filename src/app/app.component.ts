@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {filter, groupBy, isNil, reduce, sortBy} from "lodash-es";
-import {Observable, Subject, switchMap, takeUntil, timer} from "rxjs";
+import {BehaviorSubject, Observable, Subject, switchMap, takeUntil, timer} from "rxjs";
 import {Peer} from "../lib/domain/peer";
 import {PeerService} from "../lib/infra/peer-service";
 
@@ -12,15 +12,16 @@ import {PeerService} from "../lib/infra/peer-service";
 export class AppComponent implements OnInit, OnDestroy {
   totalPeers: number = 0;
   biggestProviderNames: string;
-  peers$: Observable<Peer[]>;
+  peers$ = new BehaviorSubject<Peer[]>([]);
 
   private _destroy$ = new Subject();
 
   constructor(private readonly _peerService: PeerService) {
-    this.peers$ = timer(0, 5000)
+    timer(0, 5000)
       .pipe(
         switchMap(() => this._peerService.getAllPeers()),
-        takeUntil(this._destroy$));
+        takeUntil(this._destroy$))
+      .subscribe(peers => this.peers$.next(peers));
 
     this.peers$.subscribe((peers: Peer[]) => {
       try {
