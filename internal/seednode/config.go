@@ -17,7 +17,7 @@ import (
 
 // TSConfig extends tendermint P2PConfig with the things we need
 type TSConfig struct {
-	config.P2PConfig `mapstructure:",squash"`
+	config.P2PConfig `mapstructure:"p2p"`
 	HttpPort         string `mapstructure:"http_port"`
 	ChainId          string `mapstructure:"chain_id"`
 	LogLevel         string `mapstructure:"log_level"`
@@ -36,7 +36,7 @@ func init() {
 }
 
 func InitConfig() (TSConfig, p2p.NodeKey) {
-  var tsConfig = new(TSConfig)
+  var tsConfig TSConfig
 	userHomeDir, err := homedir.Dir()
   if err != nil {
 		panic(err)
@@ -55,8 +55,8 @@ func InitConfig() (TSConfig, p2p.NodeKey) {
 	viper.AddConfigPath(filepath.Join(userHomeDir, ".terranseed", "config"))
 
 	if err := viper.ReadInConfig(); err == nil {
-		logger.Info(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()))
-		err := viper.Unmarshal(tsConfig)
+		logger.Info(fmt.Sprintf("Loading config file: %s", viper.ConfigFileUsed()))
+		err := viper.Unmarshal(&tsConfig)
 		if err != nil {
 			panic("Invalid config file!")
 		}
@@ -64,7 +64,7 @@ func InitConfig() (TSConfig, p2p.NodeKey) {
 		// ignore not found error, return other errors
 		logger.Info("No existing configuration found, generating one")
     tsConfig = initDefaultConfig()
-    writeConfigFile(configFilePath, tsConfig)
+    writeConfigFile(configFilePath, &tsConfig)
   } else {
     panic(err)
   }
@@ -83,12 +83,12 @@ func InitConfig() (TSConfig, p2p.NodeKey) {
   if tsConfig.Seeds == "" || tsConfig.ChainId == "" {
     panic("Don't forget to fill ChainId and Seeds in config.toml file and personalize settings")
   }
-	return *tsConfig, *nodeKey
+	return tsConfig, *nodeKey
 }
 
-func initDefaultConfig() *TSConfig {
+func initDefaultConfig() TSConfig {
 	p2PConfig := config.DefaultP2PConfig()
-  tsConfig := &TSConfig{
+  tsConfig := TSConfig{
     P2PConfig: *p2PConfig,
     HttpPort:  "8090",
     LogLevel:  "info",
@@ -121,19 +121,17 @@ const defaultConfigTemplate = `# This is a TOML config file.
 #######################################################
 ###    TerranSeed Server Configuration Options      ###
 #######################################################
-[chain]
 # the ChainId of the network to crawl
 chain_id = "{{ .ChainId }}"
 
-# Comma separated list of seed nodes to connect to
-seeds = "{{ .Seeds }}"
-
-[web]
 http_port = "{{ .HttpPort }}"
 
-[p2p]
 # Output level for logging: "info" or "debug". debug will enable pex and addrbook verbose logs
 log_level = "{{ .LogLevel }}"
+
+[p2p]
+# Comma separated list of seed nodes to connect to
+seeds = "{{ .Seeds }}"
 
 # TCP or UNIX socket address for the RPC server to listen on
 laddr = "{{ .ListenAddress }}"

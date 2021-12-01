@@ -60,7 +60,7 @@ func StartSeedNode(seedConfig TSConfig, nodeKey p2p.NodeKey) *p2p.Switch {
 		SeedMode:                     true,
 		Seeds:                        tmstrings.SplitAndTrim(seedConfig.Seeds, ",", " "),
 		SeedDisconnectWaitPeriod:     1 * time.Second, // default is 28 hours, we just want to harvest as many addresses as possible
-		PersistentPeersMaxDialPeriod: 0,               // use exponential back-off
+		PersistentPeersMaxDialPeriod: 5 * time.Minute,               // use exponential back-off
 	})
 
 	sw := p2p.NewSwitch(cfg, transport)
