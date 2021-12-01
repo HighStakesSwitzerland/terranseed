@@ -20,7 +20,7 @@ type WebResources struct {
 	Files map[string]string
 }
 
-func StartWebServer(seedConfig seednode.Config, webResources fs.FS, ips *[]geoloc.GeolocalizedPeers) {
+func StartWebServer(seedConfig seednode.TSConfig, webResources fs.FS, ips *[]geoloc.GeolocalizedPeers) {
 	// serve static assets
 	http.Handle("/", http.FileServer(http.FS(webResources)))
 
