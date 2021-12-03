@@ -1,24 +1,4 @@
 <app-header></app-header>
-<mat-grid-list cols="3" rowHeight="5:1" gutterSize="5px" class="m-lg-3">
-  <mat-grid-tile>
-    <mat-card class="w-100">
-      <mat-card-title>Peers located</mat-card-title>
-      {{totalPeers}}
-    </mat-card>
-  </mat-grid-tile>
-  <mat-grid-tile>
-    <mat-card class="w-100">
-      <mat-card-title>Most concentration</mat-card-title>
-      {{biggestProviderNames}}
-    </mat-card>
-  </mat-grid-tile>
-  <mat-grid-tile>
-    <mat-card class="w-100">
-      <mat-card-title>Empty</mat-card-title>
-      <span>&nbsp;</span>
-    </mat-card>
-  </mat-grid-tile>
-</mat-grid-list>
 
 <mat-card-title>
   <app-pie-chart [peers$]="peers$"></app-pie-chart>

@@ -1,5 +1,4 @@
 import {Component, Input, OnDestroy, OnInit} from "@angular/core";
-import {sort} from "d3";
 import {remove, sortBy} from "lodash-es";
 import {Observable, Subject, takeUntil} from "rxjs";
 import {Peer} from "../../lib/domain/peer";
@@ -16,7 +15,7 @@ export class PieChartComponent implements OnInit, OnDestroy {
   pieData: PieData[] = [];
 
   private _destroy$ = new Subject();
-  private _providers = ["Amazon", "Google", "Digital", "Hetzner"];
+  private _providers = ["Amazon", "Google", "Digital", "Hetzner", "Microsoft"];
 
   ngOnInit(): void {
     this.peers$.pipe(
@@ -30,16 +29,18 @@ export class PieChartComponent implements OnInit, OnDestroy {
     const newPieData: PieData[] = [];
     this._providers.forEach(provider => {
       let groupedPeers = remove(peers, (peer => peer.isp.startsWith(provider)));
-      newPieData.push({
-        name: groupedPeers[0].isp,
-        value: groupedPeers.length
-      });
+      if (groupedPeers.length > 0) {
+        newPieData.push({
+          name: groupedPeers[0].isp,
+          value: groupedPeers.length
+        });
+      }
     });
     if (peers.length > 0) {
       newPieData.push({
         name: "Others",
         value: peers.length
-      })
+      });
     }
     this.pieData = sortBy(newPieData, "value").reverse();
   }

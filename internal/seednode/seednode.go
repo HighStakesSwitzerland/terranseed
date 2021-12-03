@@ -60,7 +60,7 @@ func StartSeedNode(seedConfig TSConfig, nodeKey p2p.NodeKey) *p2p.Switch {
 		SeedMode:                     true,
 		Seeds:                        tmstrings.SplitAndTrim(seedConfig.Seeds, ",", " "),
 		SeedDisconnectWaitPeriod:     1 * time.Second, // default is 28 hours, we just want to harvest as many addresses as possible
-		PersistentPeersMaxDialPeriod: 5 * time.Minute,               // use exponential back-off
+		PersistentPeersMaxDialPeriod: 5 * time.Minute, // use exponential back-off
 	})
 
 	sw := p2p.NewSwitch(cfg, transport)
@@ -68,13 +68,12 @@ func StartSeedNode(seedConfig TSConfig, nodeKey p2p.NodeKey) *p2p.Switch {
 	sw.SetAddrBook(addrBook)
 	sw.AddReactor("pex", pexReactor)
 
-	// Set loggers. Uncomment to enable
 	if seedConfig.LogLevel == "debug" {
-    // Switch module logs a lot, and it is not very useful, set as debug
-    sw.SetLogger(logger.With("module", "switch"))
-    // Same for pex module
-    pexReactor.SetLogger(logger.With("module", "pex"))
-  }
+		// Switch module logs a lot, and it is not very useful, set as debug
+		sw.SetLogger(logger.With("module", "switch"))
+		// Same for pex module
+		pexReactor.SetLogger(logger.With("module", "pex"))
+	}
 
 	// last
 	sw.SetNodeInfo(nodeInfo)
@@ -94,5 +93,4 @@ func StartSeedNode(seedConfig TSConfig, nodeKey p2p.NodeKey) *p2p.Switch {
 	}
 
 	return sw
-
 }

@@ -43,11 +43,6 @@ export class GmapsComponent implements OnInit {
   ngOnInit(): void {
     this.peers$.subscribe(peers => {
       if (!isNil(peers)) {
-        peers.forEach(p => {
-          // round coords to 1 digit
-          p.lat = parseFloat(p.lat.toFixed(1));
-          p.lon = parseFloat(p.lon.toFixed(1));
-        });
         const toMark = filter(peers, (p) => !find(this.markers, marker => find(marker.peers, mp => mp.nodeId === p.nodeId)));
         this.markPeers(toMark);
       }
@@ -57,7 +52,12 @@ export class GmapsComponent implements OnInit {
   markPeers(toMark: Peer[]) {
     toMark?.forEach(peer => {
       // if there is already a marker at this position
-      let existingMarker = this.markers.find(m => m.position.lat == peer.lat && m.position.lng == peer.lon);
+      let existingMarker = this.markers.find(m =>
+        // round position to 2 digits to mitigate ip geolocalization errors
+        (m.position.lat as number).toFixed(2) == peer.lat.toFixed(2)
+        && (m.position.lng as number).toFixed(2) == peer.lon.toFixed(2)
+        && m.peers[0].isp === peer.isp
+      );
       if (!isNil(existingMarker)) {
         this.updateMarker(existingMarker, peer);
       } else {

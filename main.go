@@ -13,12 +13,14 @@ import (
 )
 
 var (
+  /*
+   * embed the angular resources inside the binary
+   */
+  //go:embed dist/terranseed
+  res embed.FS
+
 	logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "main")
-
-	//go:embed dist/terranseed
-	res embed.FS
-
-	geolocalizedIps = make([]geoloc.GeolocalizedPeers, 0)
+	geolocalizedIps = new([]geoloc.GeolocalizedPeers)
 )
 
 func main() {
@@ -30,7 +32,7 @@ func main() {
 	sw := seednode.StartSeedNode(seedConfig, nodeKey)
 
 	logger.Info("Starting Web Server...")
-	http.StartWebServer(seedConfig, embeddedFS, &geolocalizedIps)
+	http.StartWebServer(seedConfig, embeddedFS, geolocalizedIps)
 
 	StartGeolocServiceAndBlock(sw)
 }
