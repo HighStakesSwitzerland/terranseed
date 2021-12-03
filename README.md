@@ -2,26 +2,24 @@
 
 ## TerranSeed is a fork of [TinySeed](https://github.com/notional-labs/tinyseed), which is a fork of Binary Holding's Tenderseed, which is a fork of Polychain's Tenderseed
 
-This tool runs a seed node for any tendermint based blockchain (i.e. Terra, Cosmos, Akash, etc, thanks to TinySeed), crawls the network and generates a map with the geolocalisation of the peers.
-It is used to pinpoint centralization of network in common infrastructure hosts like AWS, GCP etc.
+This tool runs a seed node for any tendermint based blockchain (i.e. Terra, Cosmos, Akash, etc, thanks to TinySeed), crawls the network and generates a map with the geolocation of the peers.
+It can be used to pinpoint centralization of networks in common infrastructure hosts like AWS, GCP etc.
 
 ###Configuration
 
 ```bash
 git clone https://github.com/Terran-Stakers/terranseed
 go mod tidy
+npm install
+npm run build
 go install .
-tenderseed
+./tenderseed
 ```
 
-Then you'll become a seed node on Osmosis-1. Let's do Cosmoshub-4, shall we? We've made Osmosis zeroconf, but hey this
-thing here reads 2 env vars!
-
-```bash
-export ID=cosmoshub-4
-export SEEDS=bf8328b66dceb4987e5cd94430af66045e59899f@public-seed.cosmos.vitwit.com:26656,cfd785a4224c7940e9a10f6c1ab24c343e923bec@164.68.107.188:26656,d72b3011ed46d783e369fdf8ae2055b99a1e5074@173.249.50.25:26656,ba3bacc714817218562f743178228f23678b2873@public-seed-node.cosmoshub.certus.one:26656,3c7cad4154967a294b3ba1cc752e40e8779640ad@84.201.128.115:26656,366ac852255c3ac8de17e11ae9ec814b8c68bddb@51.15.94.196:26656
-terranseed
-```
+Then you'll become a seed node on Columbus-5. 
+A `$HONE/.terranseed/config/config.toml` file will be generated if it doesn't exist yet, with some default parameters.
+You need to fill the `seeds` and `chain_id` and start the process again.
+It may take few minutes before discovering peers, depending on the network.
 
 ## License
 
