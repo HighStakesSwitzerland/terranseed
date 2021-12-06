@@ -1,14 +1,15 @@
 import {Component, Input, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {FormControl} from "@angular/forms";
 import {GoogleMap, MapInfoWindow, MapMarker} from "@angular/google-maps";
-import {filter, find, isNil} from "lodash-es";
-import {Observable} from "rxjs";
+import {MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
+import {filter, find, isEmpty, isNil} from "lodash-es";
+import {map, Observable} from "rxjs";
 import {Peer} from "../../lib/domain/peer";
 import {PeerMapMarker} from "../../lib/domain/peer-map-marker";
 import Icon = google.maps.Icon;
 import InfoWindowOptions = google.maps.InfoWindowOptions;
 import MarkerLabel = google.maps.MarkerLabel;
 import Size = google.maps.Size;
-
 
 @Component({
   selector: "app-gmaps",
@@ -26,6 +27,9 @@ export class GmapsComponent implements OnInit {
   @ViewChildren(MapInfoWindow)
   infoWindows: QueryList<MapInfoWindow>;
 
+  @ViewChildren(MapMarker)
+  mapMarkers: QueryList<MapMarker>;
+
   center: google.maps.LatLngLiteral = {
     lat: 46,
     lng: 6
@@ -39,6 +43,8 @@ export class GmapsComponent implements OnInit {
   };
   mapInfoWindowOptions: InfoWindowOptions = {};
   markers: PeerMapMarker[] = [];
+  autoCompleteCtrl: FormControl = new FormControl();
+  filteredMarkers: Observable<PeerMapMarker[]>;
 
   ngOnInit(): void {
     this.peers$.subscribe(peers => {
@@ -47,6 +53,9 @@ export class GmapsComponent implements OnInit {
         this.markPeers(toMark);
       }
     });
+    this.filteredMarkers = this.autoCompleteCtrl.valueChanges.pipe(
+      map((value: string) => this._filter(value)),
+    );
   }
 
   markPeers(toMark: Peer[]) {
@@ -123,6 +132,12 @@ export class GmapsComponent implements OnInit {
 
   openInfoWindow(mapMarker: MapMarker, infoWindow: MapInfoWindow) {
     this.closeInfoWindows();
+    if (mapMarker.hasOwnProperty("position")) {
+      this.map.panTo(mapMarker.position);
+    } else if (mapMarker.hasOwnProperty("marker")) {
+      // @ts-ignore
+      this.map.panTo(mapMarker.marker.position);
+    }
     infoWindow.open(mapMarker);
   }
 
@@ -130,4 +145,35 @@ export class GmapsComponent implements OnInit {
     this.infoWindows?.forEach(win => win.close());
   }
 
+  private _filter(value: string): PeerMapMarker[] {
+    const query = new RegExp(value, "i");
+    return this.markers.filter(option => {
+        let m = filter(option.peers, p => {
+          const matched = p.moniker.match(query) || p.nodeId.match(query);
+          if (matched) {
+            option.filteredMoniker = p.moniker;
+          }
+          return matched;
+        });
+        return !isEmpty(m);
+      }
+    );
+  }
+
+
+  private locateMarkerOnMap(value: PeerMapMarker) {
+    const marker = find(this.mapMarkers.toArray(), item => {
+      // thanks gmaps not to have a relation between markers and info windows
+      return item?.marker?.getPosition()!.lat() === value.position.lat && item.marker.getPosition()!.lng() === value.position.lng;
+    });
+    google.maps.event.trigger(marker!.marker!, "click");
+  }
+
+  autocompleteOptionSelected($event: MatAutocompleteSelectedEvent) {
+    this.locateMarkerOnMap($event.option.value);
+  }
+
+  getMarkerText(peer: PeerMapMarker) {
+    return peer?.filteredMoniker;
+  }
 }

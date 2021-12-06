@@ -1,7 +1,22 @@
 <app-header></app-header>
 
-<mat-card-title>
-  <app-pie-chart [peers$]="peers$"></app-pie-chart>
-</mat-card-title>
+<app-pie-chart [peers$]="peers$"></app-pie-chart>
 
 <app-gmaps [peers$]="peers$"></app-gmaps>
+
+<div class="m-2">
+  <h2>Todo list</h2>
+  <p>
+    - do not start from scratch on process restart
+    <br>
+    - add "last seen" date on nodes
+    <br>
+    - being able to see only nodes past a specific date
+    <br>
+    - display only active validators
+    <br>
+    - display missed blocks/precommits
+    <br>
+    - what else?
+  </p>
+</div>

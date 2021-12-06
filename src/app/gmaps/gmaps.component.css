@@ -9,3 +9,11 @@ body {
   margin: 100px;
   padding: 0;
 }
+
+.mat-card-subtitle {
+  width: 100%;
+}
+
+.map-search-input {
+  float: right;
+}

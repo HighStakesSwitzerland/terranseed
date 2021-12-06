@@ -1,5 +1,18 @@
 <mat-card>
-  <mat-card-title>Map Overview</mat-card-title>
+  <mat-card-subtitle>Map Overview
+    <form class="map-search-input">
+      <mat-form-field appearance="fill">
+        <mat-label>Moniker / NodeId</mat-label>
+        <input type="text" matInput [formControl]="autoCompleteCtrl" [matAutocomplete]="auto">
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="autocompleteOptionSelected($event)"
+                          [displayWith]="getMarkerText">
+          <mat-option *ngFor="let marker of filteredMarkers | async" [value]="marker">
+            {{marker.filteredMoniker}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </form>
+  </mat-card-subtitle>
   <google-map
     height="500px"
     width="100%"
@@ -14,12 +27,12 @@
         [label]="m.label"
         [icon]="m.icon"
         (mapClick)="openInfoWindow(marker, infoWindow)">
+        <map-info-window
+          #infoWindow="mapInfoWindow"
+          [options]="mapInfoWindowOptions">
+          <app-info-window [marker]="m"></app-info-window>
+        </map-info-window>
       </map-marker>
-      <map-info-window
-        #infoWindow="mapInfoWindow"
-        [options]="mapInfoWindowOptions">
-        <app-info-window [marker]="m"></app-info-window>
-      </map-info-window>
     </ng-container>
   </google-map>
 </mat-card>
