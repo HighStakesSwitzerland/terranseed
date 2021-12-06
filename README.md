@@ -16,10 +16,12 @@ go install .
 ./tenderseed
 ```
 
-Then you'll become a seed node on Columbus-5. 
-A `$HONE/.terranseed/config/config.toml` file will be generated if it doesn't exist yet, with some default parameters.
-You need to fill the `seeds` and `chain_id` and start the process again.
-It may take few minutes before discovering peers, depending on the network.
+A `$HOME/.terranseed/config/config.toml` file will be generated if it doesn't exist yet, with some default parameters, and the program will exit.
+
+You need to fill the `seeds` and `chain_id` and start it again.
+It may take few minutes/hours before discovering peers, depending on the network. 
+
+To get a working map, you need to grab a key in google dashboard, and copy paste it in index.html (look for `key=`)
 
 ## License
 

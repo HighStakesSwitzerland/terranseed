@@ -27,14 +27,13 @@ func main() {
 	seedConfig, nodeKey := seednode.InitConfig()
 	embeddedFS, _ := fs.Sub(res, "dist/terranseed")
 
-	logger.Info("Starting Seed Node...")
-
-	sw := seednode.StartSeedNode(seedConfig, nodeKey)
-
 	logger.Info("Starting Web Server...")
 	http.StartWebServer(seedConfig, embeddedFS, geolocalizedIps)
 
-	StartGeolocServiceAndBlock(sw)
+  logger.Info("Starting Seed Node...")
+  sw := seednode.StartSeedNode(seedConfig, nodeKey)
+
+  StartGeolocServiceAndBlock(sw)
 }
 
 func StartGeolocServiceAndBlock(sw *p2p.Switch) {
