@@ -79,6 +79,7 @@ func InitConfig() (TSConfig, p2p.NodeKey) {
 		"node listen", tsConfig.ListenAddress,
 		"http server port", tsConfig.HttpPort,
 		"chain", tsConfig.ChainId,
+    "nodeId", nodeKey.ID(),
 	)
   if tsConfig.Seeds == "" || tsConfig.ChainId == "" {
     panic("Don't forget to fill ChainId and Seeds in config.toml file and personalize settings")
